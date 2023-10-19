@@ -1,124 +1,93 @@
-from PyQt5.QtWidgets import QApplication
-from random import choice, shuffle
+''' Вікно для картки питання '''
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import (
+        QApplication, QWidget, 
+        QTableWidget, QListWidget, QListWidgetItem,
+        QLineEdit, QFormLayout,
+        QHBoxLayout, QVBoxLayout, 
+        QGroupBox, QButtonGroup, QRadioButton,  
+        QPushButton, QLabel, QSpinBox)
 
-app = QApplication([])
+window = QWidget()
 
-from main_window import *
-from menu_window import *
+# віджети, які треба буде розмістити:
+# кнопка повернення в основне вікно 
+btn_Menu = QPushButton('Меню')
+# кнопка прибирає вікно і повертає його після закінчення таймера
+btn_Sleep = QPushButton('Відпочити')
+# введення кількості хвилин
+box_Time = QSpinBox()
+box_Time.setValue(30)
+lb_Time = QLabel('секунд')
+# кнопка відповіді "Ок" / "Наступний"
+btn_OK = QPushButton('Відповісти')
+# текст питання
+lb_Question = QLabel('1')
 
-class Question():
-    def __init__(self, question, answer, wrong_answer1, wrong_answer2, wrong_answer3):
-        self.question = question
-        self.answer = answer
-        self.wrong_answer1 = wrong_answer1
-        self.wrong_answer2 = wrong_answer2
-        self.wrong_answer3 = wrong_answer3
-        self.isAsking = True
-        self.count_ask = 0      # кількість відповідей
-        self.count_right = 0    # кількість правильних відповідей
-    def got_right(self):
-        self.count_ask += 1
-        self.count_right += 1
-    def got_wrong(self):
-        self.count_ask += 1
+# Опиши групу перемикачів
+radio_group_box = QGroupBox('Варіанти відповідей')
+radio_group = QButtonGroup()
 
-q1 = Question('Яблуко', 'apple', 'application', 'pinapple', 'apply')
-q2 = Question('Дім', 'house', 'horse', 'hurry', 'hour')
-q3 = Question('Миша', 'mouse', 'mouth', 'muse', 'museum')
-q4 = Question('Число', 'number', 'digit', 'amount', 'summary')
+rbtn_1 = QRadioButton('1')
+rbtn_2 = QRadioButton('1')
+rbtn_3 = QRadioButton('1')
+rbtn_4 = QRadioButton('1')
 
-questions = [q1, q2, q3, q4] 
-radio_buttons = [rbtn_1, rbtn_2, rbtn_3, rbtn_4] 
+radio_group.addButton(rbtn_1)
+radio_group.addButton(rbtn_2)
+radio_group.addButton(rbtn_3)
+radio_group.addButton(rbtn_4)
 
-def new_question():
-    global curent_question
-    curent_question = choice(questions)
+# Опиши панень з результатами
+answer_group_box = QGroupBox('Результат тесту')
+lb_Resultat = QLabel('') # правильно / неправильно
+lb_Correct = QLabel('') # правильна відповідь
 
-    lb_Question.setText(curent_question.question)
-    lb_Correct.setText(curent_question.answer)
-
-    shuffle(radio_buttons)
-    radio_buttons[0].setText(curent_question.answer)
-    radio_buttons[1].setText(curent_question.wrong_answer1)
-    radio_buttons[2].setText(curent_question.wrong_answer2)
-    radio_buttons[3].setText(curent_question.wrong_answer3)
-
-new_question()
-
-def check():
-    for answer in radio_buttons:
-        if answer.isChecked():
-            if answer.text() == lb_Correct.text():
-                curent_question.got_right()
-                lb_Resultat.setText('Вірно!')
-                break
-    else:
-        lb_Resultat.setText('Не вірно!')
-        curent_question.got_wrong()
-
-    
-
-def click_ok():
-    if btn_OK.text() == 'Відповісти':
-        check()
-        # rbtn_1.hide()
-        # rbtn_2.hide()
-        # rbtn_3.hide()
-        # rbtn_4.hide()
-        radio_group_box.hide()
-        answer_group_box.show()
-        btn_OK.setText('Наступне запитання')
-    else:
-        new_question()
-        # rbtn_1.show()
-        # rbtn_2.show()
-        # rbtn_3.show()
-        # rbtn_4.show()
-        radio_group_box.show()
-        answer_group_box.hide()
-        btn_OK.setText('Відповісти')
-
-btn_OK.clicked.connect(click_ok)
+# Розмісти весь вміст в лейаути. Найбільшим лейаутом буде layout_card
+layout_h1 = QHBoxLayout()
+layout_h2 = QHBoxLayout()
+layout_h3 = QHBoxLayout()
+layout_v1 = QVBoxLayout()
+layout_v2 = QVBoxLayout()
+layout_h4 = QHBoxLayout()
 
 
-def menu_generation():
-    if curent_question.count_ask == 0:
-        stat = 0
-    else:
-        stat = int(curent_question.count_right / curent_question.count_ask * 100)
-    
-    text = f'Разів відповіли: {curent_question.count_ask}\nВірних відповідей: {curent_question.count_right}\nУспішність: {stat}%'
-    lb_statistic.setText(text)
-    menu.show()
-    window.hide()
+layout_h1.addWidget(btn_Menu)
+layout_h1.addStretch(1)
+layout_h1.addWidget(btn_Sleep)
+layout_h1.addWidget(box_Time)
+layout_h1.addWidget(lb_Time)
 
-btn_Menu.clicked.connect(menu_generation)
+layout_h2.addWidget(lb_Question)
 
-def back_menu():
-    menu.hide()
-    window.show()
+layout_v1.addWidget(rbtn_1)
+layout_v1.addWidget(rbtn_2)
+layout_v2.addWidget(rbtn_3)
+layout_v2.addWidget(rbtn_4)
+layout_h3.addLayout(layout_v1)
+layout_h3.addLayout(layout_v2)
+radio_group_box.setLayout(layout_h3)
 
-btn_back.clicked.connect(back_menu)
-
-def clear():
-    le_question.clear()
-    le_right_ans.clear()
-    le_wrong_ans1.clear()
-    le_wrong_ans2.clear()
-    le_wrong_ans3.clear()
-
-btn_clear.clicked.connect(clear)
-
-def add_question():
-    new_q = Question(le_question.text(), le_right_ans.text(),
-                     le_wrong_ans1.text(), le_wrong_ans2.text(),
-                     le_wrong_ans3.text())
-
-    questions.append(new_q)
-    clear()
+layout_v3 = QVBoxLayout()
+layout_v3.addWidget(lb_Resultat)
+layout_v3.addWidget(lb_Correct)
+answer_group_box.setLayout(layout_v3)
+answer_group_box.hide()
 
 
-btn_add.clicked.connect(add_question)
 
-window.show()
-app.exec_()
+layout_h4.addWidget(btn_OK)
+
+line = QVBoxLayout()
+line.addLayout(layout_h1, stretch=1)
+line.addLayout(layout_h2, stretch=2)
+line.addWidget(radio_group_box, stretch=8)
+line.addWidget(answer_group_box, stretch=8)
+line.addStretch(1)
+line.addLayout(layout_h4)
+line.addStretch(1)
+line.addSpacing(5)
+
+window.setLayout(line)
+window.resize(550, 450)
+
